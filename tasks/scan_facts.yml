@@ -1,0 +1,43 @@
+---
+
+- name: check os version
+  raw: (Get-Item -Path "$env:SystemRoot\System32\kernel32.dll").VersionInfo.ProductVersion
+  changed_when: False
+  check_mode: no
+  ignore_errors: yes
+  register: find_os_version
+
+- name: set ansible_kernel
+  set_fact:
+    ansible_kernel: "{{ find_os_version.stdout | trim | regex_replace('[^A-Za-z0-9.]', '') }}"
+
+- name: debug ansible_kernel
+  debug:
+    msg: "ansible_kernel: {{ ansible_kernel }}"
+
+- name: set ansible_distribution_major_version
+  set_fact:
+    ansible_distribution_major_version: "{{ ansible_kernel.split('.')[0] | int }}"
+
+- name: debug ansible_distribution_major_version
+  debug:
+    msg: "ansible_distribution_major_version: {{ ansible_distribution_major_version }}"
+
+- name: check powershell version (1/2)
+  raw: Write-Host "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"
+  changed_when: False
+  check_mode: no
+  ignore_errors: yes
+  register: powershell_current_version
+
+- name: set installed powershell version (1/2)
+  set_fact:
+    ansible_powershell_version: "{{ powershell_current_version.stdout | trim | regex_replace('[^A-Za-z0-9.]', '') | int }}"
+
+- name: debug ansible_powershell_version (1/2)
+  debug:
+    msg: "ansible_powershell_version: {{ ansible_powershell_version }}"
+
+- name: debug powershell target version
+  debug:
+    msg: "target powershell version: {{ powershell_target_version }}"

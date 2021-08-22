@@ -1,0 +1,32 @@
+---
+
+- block:
+    - name: perform pre-flight tasks
+      include_tasks: pre_flight.yml
+
+    - name: install .NET 4.5.2
+      include_tasks: dot_net_452_install.yml
+      when: dot_net_required
+
+    - block:
+        - name: upgrade powershell to {{ powershell_target_version }}
+          include_tasks: raw_hotfix_apply.yml
+          vars:
+            hotfix_download_url: "{{ powershell_upgrade_hotfix.url }}"
+            hotfix_download_location: "{{ powershell_upgrade_hotfix_download_location }}"
+            hotfix_file: "{{ powershell_upgrade_hotfix.file }}"
+            hotfix_filename: "{{ (powershell_upgrade_hotfix.url).split('/')[-1] }}"
+            hotfix_pause_seconds: 240
+
+        - name: perform post-upgrade tasks
+          include_tasks: post_upgrade.yml
+      when: (ansible_powershell_version|int) is version(powershell_target_version|int, '<')
+
+    - name: apply winrm memory hotfix for powershell 3.0
+      include_tasks: winrm_memfix.yml
+      when: ansible_powershell_version|int is version(3, '==')
+  rescue:
+    - name: fail if needed
+      fail:
+        msg: "invalid upgrade options selected, failing here..."
+      when: powershell_upgrade_failed_when

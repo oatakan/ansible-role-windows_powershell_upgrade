@@ -1,0 +1,66 @@
+---
+
+- name: fail if not valid upgrade target
+  fail:
+    msg: "invalid powershell target, possible values supported: {{ powershell_target_versions_supported }}"
+  when: powershell_target_version not in powershell_target_versions_supported
+
+- name: scan for facts
+  include_tasks: scan_facts.yml
+  when: ansible_powershell_version is undefined or ansible_powershell_version < 3
+
+- name: downgrade is not supported
+  fail:
+    msg: "downgrade is not supported (current > target): {{ ansible_powershell_version|int }} > {{ powershell_target_version|int }}"
+  when: (ansible_powershell_version|int) is version(powershell_target_version|int, '>')
+
+- name: v3 is the latest supported on the system
+  fail:
+    msg: "cannot upgrade Server 2008/Windows 7 to Powershell v4 or v5, v3 is the latest supported"
+  when:
+    - os_version is version('6.1', '<')
+    - powershell_target_version|int is version('3', '>')
+
+- name: check to see if .NET needs to be installed
+  raw: |
+    # detect if .NET 4.5.2 is not installed
+    $dotnet_path = "HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full"
+    $dotnet_upgrade_needed = $false
+    if (-not (Test-Path -Path $dotnet_path)) {
+        $dotnet_upgrade_needed = $true
+    } else {
+        $dotnet_version = Get-ItemProperty -Path $dotnet_path -Name Release -ErrorAction SilentlyContinue
+        if ($dotnet_version) {
+            # 379893 == 4.5.2
+            if ($dotnet_version.Release -lt 379893) {
+                $dotnet_upgrade_needed = $true
+            }
+        } else {
+            $dotnet_upgrade_needed = $true
+        }
+    }
+    return $dotnet_upgrade_needed
+  changed_when: False
+  check_mode: no
+  ignore_errors: yes
+  register: check_dot_net_required
+
+- name: set dot_net_required
+  set_fact:
+    dot_net_required: "{{ check_dot_net_required.stdout | trim | regex_replace('[^A-Za-z0-9.]', '') | bool }}"
+
+- name: start windows update service
+  raw: net start wuauserv
+  args:
+    executable: cmd.exe
+  failed_when: false
+
+- name: ensure no wusa service is running for hotfix installation
+  raw: get-process wusa -ErrorAction SilentlyContinue
+  changed_when: False
+  check_mode: no
+  register: check_wusa_process
+  failed_when: false
+  until: check_wusa_process.rc != 0
+  delay: 60
+  retries: 15

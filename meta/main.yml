@@ -1,0 +1,39 @@
+---
+galaxy_info:
+  author: Orcun Atakan
+  description: Ansible galaxy role for upgrading Powershell on Windows systems
+  role_name: windows_powershell_upgrade
+  company: Red Hat
+
+  license: MIT
+
+  min_ansible_version: 2.5
+
+  platforms:
+    - name: Windows
+      versions:
+        - all
+
+  cloud_platforms:
+    - amazon
+    - google
+    - azure
+    - azure
+    - vmware
+    - ovirt
+
+  galaxy_tags:
+    - windows
+    - ec2
+    - vmware
+    - azure
+    - microsoft
+    - rhev
+    - rhv
+    - ovirt
+    - aws
+    - cloud
+    - multicloud
+    - template
+
+dependencies: []
