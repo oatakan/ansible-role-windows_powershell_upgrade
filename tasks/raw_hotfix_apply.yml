@@ -41,6 +41,9 @@
   check_mode: no
   ignore_errors: yes
 
+- debug:
+    msg: "hotfix file: {{ hotfix_file }}"
+
 - name: create a scheduled task to install hotfix
   raw: SCHTASKS /Create /SC MONTHLY /MO first /D SUN /TN hotfix_install /TR "{{ hotfix_download_location }}\\{{ hotfix_file }} /quiet /restart"
   args:

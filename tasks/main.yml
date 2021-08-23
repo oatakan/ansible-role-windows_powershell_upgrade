@@ -4,11 +4,22 @@
     - name: perform pre-flight tasks
       include_tasks: pre_flight.yml
 
+    - include_tasks: enable_tls_system_default.yml
+      when:
+        - enable_tls_system_default
+        - ansible_powershell_version|int is version(3, '<')
+
     - name: install .NET 4.5.2
       include_tasks: dot_net_452_install.yml
       when: dot_net_required
 
     - block:
+        - name: stop windows update service
+          raw: net stop wuauserv
+          args:
+            executable: cmd.exe
+          failed_when: false
+
         - name: upgrade powershell to {{ powershell_target_version }}
           include_tasks: raw_hotfix_apply.yml
           vars:
@@ -16,7 +27,7 @@
             hotfix_download_location: "{{ powershell_upgrade_hotfix_download_location }}"
             hotfix_file: "{{ powershell_upgrade_hotfix.file }}"
             hotfix_filename: "{{ (powershell_upgrade_hotfix.url).split('/')[-1] }}"
-            hotfix_pause_seconds: 240
+            hotfix_pause_seconds: 180
 
         - name: perform post-upgrade tasks
           include_tasks: post_upgrade.yml
@@ -30,3 +41,9 @@
       fail:
         msg: "invalid upgrade options selected, failing here..."
       when: powershell_upgrade_failed_when
+  always:
+    - name: start windows update service
+      raw: net start wuauserv
+      args:
+        executable: cmd.exe
+      failed_when: false

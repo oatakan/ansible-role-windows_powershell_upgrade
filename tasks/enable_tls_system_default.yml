@@ -1,0 +1,40 @@
+---
+
+- name: start windows update service
+  raw: net start wuauserv
+  args:
+    executable: cmd.exe
+  failed_when: false
+
+- name: ensure no wusa service is running for hotfix installation
+  raw: get-process wusa -ErrorAction SilentlyContinue
+  changed_when: False
+  check_mode: no
+  register: check_wusa_process
+  failed_when: false
+  until: check_wusa_process.rc != 0
+  delay: 60
+  retries: 15
+
+- name: enable tls system_default
+  include_tasks: raw_hotfix_apply.yml
+  vars:
+    hotfix_download_url: "{{ enable_tls_support_hotfix.url }}"
+    hotfix_download_location: "{{ enable_tls_support_hotfix_download_location }}"
+    hotfix_file: "{{ enable_tls_support_hotfix.file }}"
+    hotfix_filename: "{{ (enable_tls_support_hotfix.url).split('/')[-1] }}"
+    hotfix_pause_seconds: 60
+
+- name: ensure no wusa service is running
+  raw: get-process wusa -ErrorAction SilentlyContinue
+  changed_when: False
+  check_mode: no
+  register: check_wusa_process
+  failed_when: false
+  until: check_wusa_process.rc != 0
+  delay: 60
+  retries: 15
+
+- name: wait for any update installation to finish
+  pause:
+    seconds: 60
