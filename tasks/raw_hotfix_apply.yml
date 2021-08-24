@@ -1,7 +1,7 @@
 ---
 
 - name: download hotfix file
-  raw: '(New-Object -TypeName System.Net.WebClient).DownloadFile("{{ hotfix_download_url }}", "{{ hotfix_download_location }}\{{ hotfix_filename }}")'
+  raw: '(New-Object -TypeName System.Net.WebClient).DownloadFile("{{ hotfix_download_url }}", "{{ hotfix_download_location }}\\{{ hotfix_filename }}")'
   changed_when: False
   check_mode: no
   register: download_hotfix

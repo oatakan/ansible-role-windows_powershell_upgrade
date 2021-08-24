@@ -1,7 +1,7 @@
 ---
 
 - name: download file
-  raw: '(New-Object -TypeName System.Net.WebClient).DownloadFile("{{ dot_net_452.url }}", "{{ dot_net_452_download_location }}\{{ dot_net_452.file }}")'
+  raw: '(New-Object -TypeName System.Net.WebClient).DownloadFile("{{ dot_net_452.url }}", "{{ dot_net_452_download_location }}\\{{ dot_net_452.file }}")'
   changed_when: False
   check_mode: no
   register: download_dot_net_file
