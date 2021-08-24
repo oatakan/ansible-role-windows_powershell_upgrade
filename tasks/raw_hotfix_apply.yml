@@ -1,7 +1,7 @@
 ---
 
 - name: download hotfix file
-  raw: '(New-Object -TypeName System.Net.WebClient).DownloadFile("{{ hotfix_download_url }}", "{{ hotfix_download_location }}\\{{ hotfix_filename }}")'
+  raw: '(New-Object -TypeName System.Net.WebClient).DownloadFile("{{ hotfix_download_url }}", "{{ hotfix_download_location }}\{{ hotfix_filename }}")'
   changed_when: False
   check_mode: no
   register: download_hotfix
@@ -12,7 +12,7 @@
 - name: unzip if needed
   raw: |
     $tmp_dir = "{{ hotfix_download_location }}"
-    $zip_file = "{{ hotfix_download_location }}\\{{ hotfix_file }}"
+    $zip_file = "{{ hotfix_download_location }}\{{ hotfix_filename }}"
 
     try {
         Add-Type -AssemblyName System.IO.Compression.FileSystem > $null
@@ -41,11 +41,8 @@
   check_mode: no
   ignore_errors: yes
 
-- debug:
-    msg: "hotfix file: {{ hotfix_file }}"
-
 - name: create a scheduled task to install hotfix
-  raw: SCHTASKS /Create /SC MONTHLY /MO first /D SUN /TN hotfix_install /TR "{{ hotfix_download_location }}\\{{ hotfix_file }} /quiet /restart"
+  raw: SCHTASKS /Create /SC MONTHLY /MO first /D SUN /TN hotfix_install /TR "{{ hotfix_download_location }}\{{ hotfix_file }} /quiet /restart"
   args:
     executable: cmd.exe
   changed_when: False

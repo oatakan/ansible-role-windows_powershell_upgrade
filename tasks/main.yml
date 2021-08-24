@@ -20,6 +20,15 @@
             executable: cmd.exe
           failed_when: false
 
+        - name: uninstall powershell 3.0
+          raw: wusa.exe /uninstall /KB:2506143 /quiet /norestart
+          args:
+            executable: cmd.exe
+          failed_when: false
+          when:
+            - ansible_powershell_version|int is version(3, '==')
+            - powershell_target_version|int is version(5, '>=')
+
         - name: upgrade powershell to {{ powershell_target_version }}
           include_tasks: raw_hotfix_apply.yml
           vars:
@@ -27,7 +36,7 @@
             hotfix_download_location: "{{ powershell_upgrade_hotfix_download_location }}"
             hotfix_file: "{{ powershell_upgrade_hotfix.file }}"
             hotfix_filename: "{{ (powershell_upgrade_hotfix.url).split('/')[-1] }}"
-            hotfix_pause_seconds: 180
+            hotfix_pause_seconds: "{{ powershell_upgrade_hotfix_install_wait_seconds }}"
 
         - name: perform post-upgrade tasks
           include_tasks: post_upgrade.yml
