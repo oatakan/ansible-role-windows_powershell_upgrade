@@ -3,7 +3,7 @@
 - name: fail if not valid upgrade target
   fail:
     msg: "invalid powershell target, possible values supported: {{ powershell_target_versions_supported }}"
-  when: powershell_target_version not in powershell_target_versions_supported
+  when: powershell_target_version|float not in powershell_target_versions_supported
 
 - include_tasks: enable_powershell.yml
 
