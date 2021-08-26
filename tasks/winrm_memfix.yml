@@ -40,9 +40,9 @@
 
 - name: wait for system to reboot after fix
   wait_for_connection:
-    delay: 300
+    delay: "{{ ps_memfix_wait_for_connection_delay }}"
     sleep: 30
-    timeout: 300
+    timeout: "{{ ps_memfix_wait_for_connection_timeout }}"
 
 - name: wait for powershell memfix task to finish
   raw: '((schtasks /query /TN memfix)[4] -split " +")[-2]'
