@@ -37,6 +37,10 @@ powershell_upgrade_hotfixes:
       kb: kb3191565
       file: W2K12-KB3191565-x64.msu
       url: http://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/W2K12-KB3191565-x64.msu
+    os_6_3:
+      kb: kb3191565
+      file: W2K12-KB3191565-x64.msu
+      url: http://download.microsoft.com/download/6/F/5/6F5FF66C-6775-42B0-86C4-47D41F2DA187/W2K12-KB3191565-x64.msu
 
 dot_net_452_download_location: 'C:\Windows\Temp'
 dot_net_452:
