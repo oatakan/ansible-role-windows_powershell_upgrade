@@ -9,7 +9,7 @@
 
 - name: scan for facts
   include_tasks: scan_facts.yml
-  when: ansible_powershell_version is undefined or ansible_powershell_version < 3
+  when: ansible_powershell_version is undefined or (ansible_powershell_version|int) is version('3', '<')
 
 - name: downgrade is not supported
   fail:
@@ -21,7 +21,7 @@
     msg: "cannot upgrade Server 2008/Windows 7 to Powershell v4 or v5, v3 is the latest supported"
   when:
     - os_version is version('6.1', '<')
-    - powershell_target_version|int is version('3', '>')
+    - (powershell_target_version|int) is version('3', '>')
 
 - name: check to see if .NET needs to be installed
   raw: |
