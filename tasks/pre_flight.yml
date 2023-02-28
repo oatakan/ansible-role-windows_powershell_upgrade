@@ -50,3 +50,19 @@
 - name: set dot_net_required
   set_fact:
     dot_net_required: "{{ check_dot_net_required.stdout | trim | regex_replace('[^A-Za-z0-9.]', '') | bool }}"
+
+- name: test http connection
+  raw: "[System.Net.WebRequest]::Create('{{ hotfix_download_url }}').GetResponse()"
+  failed_when: false
+  register: test_http
+  vars:
+    hotfix_download_url: "{{ powershell_upgrade_hotfix.url }}"
+
+- name: set windows_ps_ignore_cert
+  set_fact:
+    windows_ps_ignore_cert: true
+  when:
+    - test_http.rc != 0
+    - test_http.stderr is defined
+    - test_http.stderr | length
+    - ('Could not establish trust relationship for the SSL/TLS' in test_http.stderr)

@@ -73,3 +73,38 @@ powershell_target_versions_supported:
   - 5.1
 
 powershell_upgrade_failed_when: true  # ignore errors or fail
+
+windows_ps_ignore_cert: false
+
+windows_ignore_cert_block: |
+  if (-not ([System.Management.Automation.PSTypeName]'ServerCertificateValidationCallback').Type)
+  {
+  $certCallback = @"
+      using System;
+      using System.Net;
+      using System.Net.Security;
+      using System.Security.Cryptography.X509Certificates;
+      public class ServerCertificateValidationCallback
+      {
+          public static void Ignore()
+          {
+              if(ServicePointManager.ServerCertificateValidationCallback ==null)
+              {
+                  ServicePointManager.ServerCertificateValidationCallback += 
+                      delegate
+                      (
+                          Object obj, 
+                          X509Certificate certificate, 
+                          X509Chain chain, 
+                          SslPolicyErrors errors
+                      )
+                      {
+                          return true;
+                      };
+              }
+          }
+      }
+  "@
+      Add-Type $certCallback
+   }
+  [ServerCertificateValidationCallback]::Ignore()

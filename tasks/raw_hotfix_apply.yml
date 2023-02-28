@@ -1,7 +1,9 @@
 ---
 
 - name: download hotfix file
-  raw: '(New-Object -TypeName System.Net.WebClient).DownloadFile("{{ hotfix_download_url }}", "{{ hotfix_download_location }}\{{ hotfix_filename }}")'
+  raw: |
+    {{ windows_ignore_cert_block if windows_ps_ignore_cert else '#' }} 
+    (New-Object -TypeName System.Net.WebClient).DownloadFile("{{ hotfix_download_url }}", "{{ hotfix_download_location }}\{{ hotfix_filename }}")
   changed_when: False
   check_mode: no
   register: download_hotfix
