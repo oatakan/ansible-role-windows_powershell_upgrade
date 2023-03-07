@@ -17,7 +17,9 @@ A description of the settable variables for this role should go here, including 
 Dependencies
 ------------
 
-None
+A list of roles that this role utilizes:
+
+- oatakan.windows_hotfix
 
 Example Playbook
 ----------------

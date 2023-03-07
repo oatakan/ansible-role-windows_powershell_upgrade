@@ -17,13 +17,12 @@
   retries: 15
 
 - name: enable tls system_default
-  include_tasks: raw_hotfix_apply.yml
+  include_role:
+    name: "{{ windows_hotfix_role }}"
   vars:
-    hotfix_download_url: "{{ enable_tls_support_hotfix.url }}"
-    hotfix_download_location: "{{ enable_tls_support_hotfix_download_location }}"
-    hotfix_file: "{{ enable_tls_support_hotfix.file }}"
-    hotfix_filename: "{{ (enable_tls_support_hotfix.url).split('/')[-1] }}"
-    hotfix_pause_seconds: 60
+    hotfix: "{{ enable_tls_support_hotfix }}"
+    use_raw_module: true
+
 
 - name: ensure no wusa service is running
   raw: get-process wusa -ErrorAction SilentlyContinue

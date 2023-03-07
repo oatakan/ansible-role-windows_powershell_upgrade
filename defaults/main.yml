@@ -8,8 +8,7 @@ ps_memfix_script_file: 'C:\Install-WMF3Hotfix.ps1'
 ps_memfix_wait_for_connection_delay: 300
 ps_memfix_wait_for_connection_timeout: 300
 
-powershell_upgrade_hotfix_download_location: 'C:\Windows\Temp'
-powershell_upgrade_hotfix_install_wait_seconds: 300
+windows_hotfix_role: oatakan.windows_hotfix
 
 powershell_upgrade_hotfixes:
   ps_3:

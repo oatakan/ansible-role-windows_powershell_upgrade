@@ -30,13 +30,11 @@
             - powershell_target_version|int is version(5, '>=')
 
         - name: upgrade powershell to {{ powershell_target_version }}
-          include_tasks: raw_hotfix_apply.yml
+          include_role:
+            name: "{{ windows_hotfix_role }}"
           vars:
-            hotfix_download_url: "{{ powershell_upgrade_hotfix.url }}"
-            hotfix_download_location: "{{ powershell_upgrade_hotfix_download_location }}"
-            hotfix_file: "{{ powershell_upgrade_hotfix.file }}"
-            hotfix_filename: "{{ (powershell_upgrade_hotfix.url).split('/')[-1] }}"
-            hotfix_pause_seconds: "{{ powershell_upgrade_hotfix_install_wait_seconds }}"
+            hotfix: "{{ powershell_upgrade_hotfix }}"
+            use_raw_module: true
 
         - name: perform post-upgrade tasks
           include_tasks: post_upgrade.yml
