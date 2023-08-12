@@ -8,6 +8,20 @@ ps_memfix_script_file: 'C:\Install-WMF3Hotfix.ps1'
 ps_memfix_wait_for_connection_delay: 300
 ps_memfix_wait_for_connection_timeout: 300
 
+ps_memfix_hotfixes:
+  os_6_0:
+    kb: kb2842230
+    file: Windows6.0-KB2842230-x64.msu
+    url: https://s3.amazonaws.com/ansible-ci-files/hotfixes/KB2842230/464090_intl_x64_zip.exe
+  os_6_1:
+    kb: kb2842230
+    file: Windows6.1-KB2842230-x64.msu
+    url: https://s3.amazonaws.com/ansible-ci-files/hotfixes/KB2842230/463984_intl_x64_zip.exe
+  os_6_2:
+    kb: kb2842230
+    file: Windows8-RT-KB2842230-x64.msu
+    url: https://s3.amazonaws.com/ansible-ci-files/hotfixes/KB2842230/463941_intl_x64_zip.exe
+
 windows_hotfix_role: oatakan.windows_hotfix
 
 powershell_upgrade_hotfixes:

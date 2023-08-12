@@ -8,3 +8,8 @@ os_version_name: "os_{{ ansible_kernel.split('.')[0] }}_{{ ansible_kernel.split(
 powershell_upgrade_hotfix:
   file: "{{ powershell_upgrade_hotfixes[ps_version_name][os_version_name].file }}"
   url: "{{ powershell_upgrade_hotfixes[ps_version_name][os_version_name].url }}"
+
+ps_memfix_hotfix:
+  kb: "{{ ps_memfix_hotfixes[os_version_name].kb }}"
+  file: "{{ ps_memfix_hotfixes[os_version_name].file }}"
+  url: "{{ ps_memfix_hotfixes[os_version_name].url }}"
