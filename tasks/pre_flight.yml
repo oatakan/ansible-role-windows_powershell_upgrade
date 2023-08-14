@@ -56,7 +56,7 @@
   failed_when: false
   register: test_http
   vars:
-    hotfix_download_url: "{{ powershell_upgrade_hotfix.url }}"
+    hotfix_download_url: "{{ powershell_upgrade_hotfix.url | default(powershell_upgrade_hotfixes['ps_5']['os_6_3'].url) }}"
 
 - name: set windows_ps_ignore_cert
   set_fact:
