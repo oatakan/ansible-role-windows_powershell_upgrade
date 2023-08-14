@@ -8,6 +8,7 @@
         name: "{{ windows_hotfix_role }}"
       vars:
         hotfix: "{{ ps_memfix_hotfix }}"
+        hotfix_install_wait_seconds: 400
         use_raw_module: true
   rescue:
     - name: apply winrm memory hotfix for powershell 3.0 (alt)
