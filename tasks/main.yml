@@ -4,11 +4,6 @@
     - name: perform pre-flight tasks
       include_tasks: pre_flight.yml
 
-    - include_tasks: enable_tls_system_default.yml
-      when:
-        - enable_tls_system_default
-        - ansible_powershell_version|int is version(3, '<')
-
     - name: install .NET 4.5.2
       include_tasks: dot_net_452_install.yml
       when: dot_net_required
@@ -40,8 +35,12 @@
           include_tasks: post_upgrade.yml
       when: (ansible_powershell_version|int) is version(powershell_target_version|int, '<')
 
-    - name: apply winrm memory hotfix for powershell 3.0
-      include_tasks: winrm_memfix.yml
+    - block:
+        - include_tasks: enable_tls_system_default.yml
+          when: enable_tls_system_default
+
+        - name: apply winrm memory hotfix for powershell 3.0
+          include_tasks: winrm_memfix.yml
       when: ansible_powershell_version|int is version(3, '==')
   rescue:
     - name: fail if needed
