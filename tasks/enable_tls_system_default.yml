@@ -36,4 +36,14 @@
 
 - name: wait for any update installation to finish
   pause:
+    seconds: 90
+
+- name: reboot system
+  raw: shutdown /r /t 5
+  args:
+    executable: cmd.exe
+  changed_when: False
+  check_mode: no
+
+- pause:
     seconds: 60
