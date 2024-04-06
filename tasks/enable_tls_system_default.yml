@@ -36,3 +36,7 @@
 - name: wait for any update installation to finish
   pause:
     seconds: 60
+
+- name: set windows_ps_ignore_cert to false
+  set_fact:
+    windows_ps_ignore_cert: false

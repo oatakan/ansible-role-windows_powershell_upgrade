@@ -58,7 +58,7 @@
   vars:
     hotfix_download_url: "{{ powershell_upgrade_hotfix.url | default(powershell_upgrade_hotfixes['ps_5']['os_6_3'].url) }}"
 
-- name: set windows_ps_ignore_cert
+- name: set windows_ps_ignore_cert to true
   set_fact:
     windows_ps_ignore_cert: true
   when:
