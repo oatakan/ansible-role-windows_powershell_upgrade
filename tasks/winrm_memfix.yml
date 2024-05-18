@@ -2,9 +2,10 @@
 
 # see https://docs.ansible.com/ansible/latest/user_guide/windows_setup.html#winrm-memory-hotfix
 
-- block:
+- name: apply powershell memory fix
+  block:
     - name: powershell memory fix
-      include_role:
+      ansible.builtin.include_role:
         name: "{{ windows_hotfix_role }}"
       vars:
         hotfix: "{{ ps_memfix_hotfix }}"
@@ -12,4 +13,4 @@
         use_raw_module: true
   rescue:
     - name: apply winrm memory hotfix for powershell 3.0 (alt)
-      include_tasks: winrm_memfix_alt.yml
+      ansible.builtin.include_tasks: winrm_memfix_alt.yml

@@ -66,12 +66,13 @@ dot_net_452:
 enable_tls_system_default: true  # this is needed to download https links on 2008 R2 and Windows 7 SP1
 enable_tls_support_hotfix_download_location: 'C:\Windows\Temp'
 # no longer available
-#enable_tls_support_hotfix:
-#  kb: kb3154518
-#  file: windows6.1-kb3154518-x64.msu
-#  url: http://download.microsoft.com/download/6/8/0/680ee424-358c-4fdf-a0de-b45dee07b711/windows6.1-kb3154518-x64.msu
+# enable_tls_support_hotfix:
+#   kb: kb3154518
+#   file: windows6.1-kb3154518-x64.msu
+#   url: http://download.microsoft.com/download/6/8/0/680ee424-358c-4fdf-a0de-b45dee07b711/windows6.1-kb3154518-x64.msu
 
-# fix: https://support.microsoft.com/en-us/topic/security-and-quality-rollup-for-net-framework-3-5-1-for-windows-7-sp1-and-windows-server-2008-r2-sp1-kb-4040980-71f9f600-4878-a9d4-6b36-93cafad2eefe
+# fix:
+# https://support.microsoft.com/en-us/topic/security-and-quality-rollup-for-net-framework-3-5-1-for-windows-7-sp1-and-windows-server-2008-r2-sp1-kb-4040980-71f9f600-4878-a9d4-6b36-93cafad2eefe
 enable_tls_support_hotfix:
   kb: kb4040980
   file: windows6.1-kb4040980-x64_83282fb5210091802984ead0d4175879056d602c.msu
@@ -103,12 +104,12 @@ windows_ignore_cert_block: |
           {
               if(ServicePointManager.ServerCertificateValidationCallback ==null)
               {
-                  ServicePointManager.ServerCertificateValidationCallback += 
+                  ServicePointManager.ServerCertificateValidationCallback +=
                       delegate
                       (
-                          Object obj, 
-                          X509Certificate certificate, 
-                          X509Chain chain, 
+                          Object obj,
+                          X509Certificate certificate,
+                          X509Chain chain,
                           SslPolicyErrors errors
                       )
                       {

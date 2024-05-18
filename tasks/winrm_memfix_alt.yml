@@ -3,51 +3,53 @@
 # see https://docs.ansible.com/ansible/latest/user_guide/windows_setup.html#winrm-memory-hotfix
 
 - name: download script
-  raw: '[Net.ServicePointManager]::SecurityProtocol = [Enum]::ToObject([Net.SecurityProtocolType], 3072); (New-Object -TypeName System.Net.WebClient).DownloadFile("{{ ps_memfix_script_url }}", "{{ ps_memfix_script_file }}")'
-  changed_when: False
-  check_mode: no
+  ansible.builtin.raw: >
+    [Net.ServicePointManager]::SecurityProtocol = [Enum]::ToObject([Net.SecurityProtocolType], 3072);
+    (New-Object -TypeName System.Net.WebClient).DownloadFile("{{ ps_memfix_script_url }}", "{{ ps_memfix_script_file }}")
+  changed_when: false
+  check_mode: false
   register: download_script
 
 - name: set execution policy
-  raw: 'Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force'
-  changed_when: False
-  check_mode: no
-  ignore_errors: yes
+  ansible.builtin.raw: 'Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force'
+  changed_when: false
+  check_mode: false
+  failed_when: false
 
 - name: delete scheduled task if it exists
-  raw: 'SCHTASKS /Delete /TN memfix /f'
+  ansible.builtin.raw: 'SCHTASKS /Delete /TN memfix /f'
   args:
     executable: cmd.exe
-  changed_when: False
-  check_mode: no
-  failed_when: False
+  changed_when: false
+  check_mode: false
+  failed_when: false
 
 - name: create a scheduled task to run powershell script
-  raw: >
+  ansible.builtin.raw: >
     SCHTASKS /Create /SC MONTHLY /MO first /D SUN /TN memfix /TR "powershell.exe -Command
     '& {{ ps_memfix_script_file }} -Verbose'"
   args:
     executable: cmd.exe
-  changed_when: False
-  check_mode: no
+  changed_when: false
+  check_mode: false
 
 - name: run scheduled task
-  raw: 'SCHTASKS /Run /TN memfix'
+  ansible.builtin.raw: 'SCHTASKS /Run /TN memfix'
   args:
     executable: cmd.exe
-  changed_when: False
-  check_mode: no
+  changed_when: false
+  check_mode: false
 
 - name: wait for system to reboot after fix
-  wait_for_connection:
+  ansible.builtin.wait_for_connection:
     delay: "{{ ps_memfix_wait_for_connection_delay }}"
     sleep: 30
     timeout: "{{ ps_memfix_wait_for_connection_timeout }}"
 
 - name: wait for powershell memfix task to finish
-  raw: '((schtasks /query /TN memfix)[4] -split " +")[-2]'
-  changed_when: False
-  check_mode: no
+  ansible.builtin.raw: '((schtasks /query /TN memfix)[4] -split " +")[-2]'
+  changed_when: false
+  check_mode: false
   register: memfix_status_check
   failed_when: false
   until: (memfix_status_check.stdout | trim | lower) == 'ready'
@@ -55,7 +57,7 @@
   retries: 30
 
 - name: delete scheduled task
-  win_scheduled_task:
+  community.windows.win_scheduled_task:
     name: memfix
     state: absent
   register: delete_scheduled_task
@@ -64,6 +66,6 @@
   retries: 10
 
 - name: delete script
-  win_file:
+  ansible.windows.win_file:
     path: "{{ ps_memfix_script_file }}"
     state: absent

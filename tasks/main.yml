@@ -1,55 +1,62 @@
 ---
 
-- block:
+- name: upgrade powershell
+  block:
     - name: perform pre-flight tasks
-      include_tasks: pre_flight.yml
+      ansible.builtin.include_tasks: pre_flight.yml
 
     - name: install .NET 4.5.2
-      include_tasks: dot_net_452_install.yml
+      ansible.builtin.include_tasks: dot_net_452_install.yml
       when: dot_net_required
 
-    - block:
+    - name: remove existing powershell and upgrade
+      block:
         - name: stop windows update service
-          raw: net stop wuauserv
+          ansible.builtin.raw: net stop wuauserv
           args:
             executable: cmd.exe
           failed_when: false
+          changed_when: false
 
         - name: uninstall powershell 3.0
-          raw: wusa.exe /uninstall /KB:2506143 /quiet /norestart
+          ansible.builtin.raw: wusa.exe /uninstall /KB:2506143 /quiet /norestart
           args:
             executable: cmd.exe
           failed_when: false
+          changed_when: false
           when:
             - ansible_powershell_version|int is version(3, '==')
             - powershell_target_version|int is version(5, '>=')
 
         - name: upgrade powershell to {{ powershell_target_version }}
-          include_role:
+          ansible.builtin.include_role:
             name: "{{ windows_hotfix_role }}"
           vars:
             hotfix: "{{ powershell_upgrade_hotfix }}"
             use_raw_module: true
 
         - name: perform post-upgrade tasks
-          include_tasks: post_upgrade.yml
+          ansible.builtin.include_tasks: post_upgrade.yml
       when: (ansible_powershell_version|int) is version(powershell_target_version|int, '<')
 
-    - block:
-        - include_tasks: enable_tls_system_default.yml
+    - name: enable tls and winrm memory fix
+      block:
+        - name: enable tls as system default
+          ansible.builtin.include_tasks: enable_tls_system_default.yml
           when: enable_tls_system_default
 
         - name: apply winrm memory hotfix for powershell 3.0
-          include_tasks: winrm_memfix.yml
+          ansible.builtin.include_tasks: winrm_memfix.yml
       when: ansible_powershell_version|int is version(3, '==')
   rescue:
     - name: fail if needed
-      fail:
+      ansible.builtin.fail:
         msg: "invalid upgrade options selected, failing here..."
       when: powershell_upgrade_failed_when
   always:
     - name: start windows update service
-      raw: net start wuauserv
+      ansible.builtin.raw: net start wuauserv
       args:
         executable: cmd.exe
       failed_when: false
+      changed_when: false

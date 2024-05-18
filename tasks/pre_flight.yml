@@ -1,30 +1,31 @@
 ---
 
 - name: fail if not valid upgrade target
-  fail:
+  ansible.builtin.fail:
     msg: "invalid powershell target, possible values supported: {{ powershell_target_versions_supported }}"
   when: powershell_target_version|float not in powershell_target_versions_supported
 
-- include_tasks: enable_powershell.yml
+- name: enable powershell
+  ansible.builtin.include_tasks: enable_powershell.yml
 
 - name: scan for facts
-  include_tasks: scan_facts.yml
+  ansible.builtin.include_tasks: scan_facts.yml
   when: ansible_powershell_version is undefined or (ansible_powershell_version|int) is version('3', '<')
 
 - name: downgrade is not supported
-  fail:
-    msg: "downgrade is not supported (current > target): {{ ansible_powershell_version|int }} > {{ powershell_target_version|int }}"
+  ansible.builtin.fail:
+    msg: "downgrade is not supported (current > target): {{ ansible_powershell_version | int }} > {{ powershell_target_version | int }}"
   when: (ansible_powershell_version|int) is version(powershell_target_version|int, '>')
 
 - name: v3 is the latest supported on the system
-  fail:
+  ansible.builtin.fail:
     msg: "cannot upgrade Server 2008/Windows 7 to Powershell v4 or v5, v3 is the latest supported"
   when:
     - os_version is version('6.1', '<')
     - (powershell_target_version|int) is version('3', '>')
 
 - name: check to see if .NET needs to be installed
-  raw: |
+  ansible.builtin.raw: |
     # detect if .NET 4.5.2 is not installed
     $dotnet_path = "HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full"
     $dotnet_upgrade_needed = $false
@@ -42,24 +43,25 @@
         }
     }
     return $dotnet_upgrade_needed
-  changed_when: False
-  check_mode: no
-  ignore_errors: yes
+  changed_when: false
+  check_mode: false
+  ignore_errors: true
   register: check_dot_net_required
 
 - name: set dot_net_required
-  set_fact:
+  ansible.builtin.set_fact:
     dot_net_required: "{{ check_dot_net_required.stdout | trim | regex_replace('[^A-Za-z0-9.]', '') | bool }}"
 
 - name: test http connection
-  raw: "[System.Net.WebRequest]::Create('{{ hotfix_download_url }}').GetResponse()"
+  ansible.builtin.raw: "[System.Net.WebRequest]::Create('{{ hotfix_download_url }}').GetResponse()"
   failed_when: false
+  changed_when: false
   register: test_http
   vars:
     hotfix_download_url: "{{ powershell_upgrade_hotfix.url | default(powershell_upgrade_hotfixes['ps_5']['os_6_3'].url) }}"
 
 - name: set windows_ps_ignore_cert to true
-  set_fact:
+  ansible.builtin.set_fact:
     windows_ps_ignore_cert: true
   when:
     - test_http.rc != 0

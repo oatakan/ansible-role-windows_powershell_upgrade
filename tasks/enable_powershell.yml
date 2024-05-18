@@ -1,42 +1,45 @@
 ---
 
-- block:
+- name: check powershell
+  block:
     - name: check if powershell is available
-      raw: 'Get-Host'
-      check_mode: no
+      ansible.builtin.raw: 'Get-Host'
+      check_mode: false
       changed_when: false
   rescue:
     - name: wait to see if powershell is being enabled
-      pause:
+      ansible.builtin.pause:
         seconds: 120
 
     - name: re-check if powershell is available
-      raw: 'Get-Host'
-      check_mode: no
+      ansible.builtin.raw: 'Get-Host'
+      check_mode: false
       failed_when: false
       changed_when: false
       register: check_powershell
 
-    - block:
+    - name: enable powershell and reboot the system
+      block:
         - name: enable powershell
-          raw: '{{ item }}'
+          ansible.builtin.raw: '{{ item }}'
           args:
             executable: cmd.exe
-          changed_when: False
-          check_mode: no
+          changed_when: false
+          check_mode: false
           loop:
             - dism /online /enable-feature /featurename:NetFx2-ServerCore
             - dism /online /enable-feature /featurename:MicrosoftWindowsPowerShell
             - dism /online /enable-feature /featurename:ServerManager-PSH-Cmdlets
 
         - name: reboot system
-          raw: shutdown /r /t 5
+          ansible.builtin.raw: shutdown /r /t 5
           args:
             executable: cmd.exe
-          changed_when: False
-          check_mode: no
+          changed_when: false
+          check_mode: false
 
-        - pause:
+        - name: pause for 30 seconds
+          ansible.builtin.pause:
             seconds: 30
       when:
         - check_powershell.stderr is defined
