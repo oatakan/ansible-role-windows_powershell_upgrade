@@ -1,10 +1,5 @@
 ---
 
-os_version: "{{ ansible_kernel.split('.')[0] }}.{{ ansible_kernel.split('.')[1] }}"
-
-ps_version_name: "ps_{{ powershell_target_version | int }}"
-os_version_name: "os_{{ ansible_kernel.split('.')[0] }}_{{ ansible_kernel.split('.')[1] }}"
-
 powershell_upgrade_hotfix:
   kb: "{{ powershell_upgrade_hotfixes[ps_version_name][os_version_name].kb }}"
   file: "{{ powershell_upgrade_hotfixes[ps_version_name][os_version_name].file }}"
