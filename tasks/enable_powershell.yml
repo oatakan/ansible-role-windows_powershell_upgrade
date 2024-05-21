@@ -4,8 +4,17 @@
   block:
     - name: check if powershell is available
       ansible.builtin.raw: 'Get-Host'
+      register: check_powershell
       check_mode: false
       changed_when: false
+      failed_when: false
+
+    - name: fail if no powershell
+      ansible.builtin.fail:
+        msg: "powershell not found. will re-check..."
+      when:
+        - check_powershell.rc is defined
+        - check_powershell.rc != 0
   rescue:
     - name: wait to see if powershell is being enabled
       ansible.builtin.pause:
