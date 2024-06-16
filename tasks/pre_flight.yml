@@ -10,7 +10,7 @@
 
 - name: scan for facts
   ansible.builtin.include_tasks: scan_facts.yml
-  when: ansible_powershell_version is undefined or (ansible_powershell_version|int) is version('3', '<')
+  when: ansible_facts.ansible_powershell_version is undefined or (ansible_powershell_version|int) is version('3', '<')
 
 - name: set additional facts
   ansible.builtin.set_fact:
