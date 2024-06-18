@@ -1,15 +1,7 @@
 ---
 
-- name: check powershell version (2/2)
-  ansible.builtin.raw: Write-Host "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"
-  changed_when: false
-  check_mode: false
-  ignore_errors: true
-  register: powershell_current_version
-
-- name: set installed powershell version (2/2)
-  ansible.builtin.set_fact:
-    ansible_powershell_version: "{{ powershell_current_version.stdout | trim | regex_replace('[^A-Za-z0-9.]', '') | int }}"
+- name: scan facts with raw_windows_setup
+  raw_windows_setup:
 
 - name: debug ansible_powershell_version (2/2)
   ansible.builtin.debug:
