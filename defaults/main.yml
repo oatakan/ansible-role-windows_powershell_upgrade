@@ -91,6 +91,11 @@ powershell_upgrade_failed_when: true  # ignore errors or fail
 windows_ps_ignore_cert: false
 
 windows_ignore_cert_block: |
+  $authRootPath = "HKLM:\SOFTWARE\Policies\Microsoft\SystemCertificates\AuthRoot"
+  if (-not (Test-Path $authRootPath)) {
+      New-Item -Path $authRootPath -Force | Out-Null
+  }
+  Set-ItemProperty -Path $authRootPath -Name "DisableRootAutoUpdate" -Value 1 -Type DWORD -Force
   if (-not ([System.Management.Automation.PSTypeName]'ServerCertificateValidationCallback').Type)
   {
   $certCallback = @"

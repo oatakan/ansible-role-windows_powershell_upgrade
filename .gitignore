@@ -1,0 +1,40 @@
+# Ansible role repo: local/dev artifacts only (keep role content tracked)
+
+# --- IDEs / editors ---
+.idea/
+.vscode/
+.claude/
+*.code-workspace
+
+# --- macOS ---
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# --- Windows (in case contributors use it) ---
+Thumbs.db
+Desktop.ini
+
+# --- Python (action_plugins, helpers, tooling) ---
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Virtual environments ---
+.venv/
+venv/
+ENV/
+
+# --- Ansible runtime artifacts ---
+*.retry
+.ansible/
+
+# --- Generic temp/log files ---
+*.log
+*.tmp
+*.swp
+*.swo
+*~

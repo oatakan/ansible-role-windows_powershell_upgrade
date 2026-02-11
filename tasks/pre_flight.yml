@@ -73,4 +73,7 @@
     - test_http.rc != 0
     - test_http.stderr is defined
     - test_http.stderr | length
-    - ('Could not establish trust relationship for the SSL/TLS' in test_http.stderr)
+    - >-
+      ('Could not establish trust relationship for the SSL/TLS' in test_http.stderr) or
+      ('The underlying connection was closed' in test_http.stderr) or
+      ('The operation has timed out' in test_http.stderr)
