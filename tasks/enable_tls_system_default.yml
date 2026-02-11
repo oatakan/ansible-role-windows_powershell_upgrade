@@ -56,6 +56,34 @@
   check_mode: false
   failed_when: false
 
+- name: re-enable root certificate auto update
+  ansible.builtin.raw: |
+    $authRootPath = "HKLM:\SOFTWARE\Policies\Microsoft\SystemCertificates\AuthRoot"
+    if (Test-Path $authRootPath) {
+        Remove-ItemProperty -Path $authRootPath -Name "DisableRootAutoUpdate" -Force -ErrorAction SilentlyContinue
+    }
+  changed_when: false
+  check_mode: false
+  failed_when: false
+  when: windows_ps_ignore_cert
+
+- name: restart winrm to apply TLS registry changes
+  ansible.builtin.raw: |
+    $delay_seconds = 5
+    $command = "Start-Sleep -Seconds $delay_seconds; Restart-Service WinRM -Force"
+    $bytes = [System.Text.Encoding]::Unicode.GetBytes($command)
+    $encoded = [Convert]::ToBase64String($bytes)
+    Start-Process powershell.exe -ArgumentList "-EncodedCommand", $encoded -WindowStyle Hidden
+  changed_when: false
+  check_mode: false
+  failed_when: false
+
+- name: wait for winrm to come back after restart
+  ansible.builtin.wait_for_connection:
+    delay: 15
+    sleep: 5
+    timeout: 120
+
 - name: set windows_ps_ignore_cert to false
   ansible.builtin.set_fact:
     windows_ps_ignore_cert: false
