@@ -38,6 +38,24 @@
   ansible.builtin.pause:
     seconds: 60
 
+- name: enable strong crypto and TLS 1.2 as default for .NET
+  ansible.builtin.raw: |
+    $paths = @(
+        "HKLM:\SOFTWARE\Microsoft\.NETFramework\v2.0.50727",
+        "HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319",
+        "HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NETFramework\v2.0.50727",
+        "HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NETFramework\v4.0.30319"
+    )
+    foreach ($path in $paths) {
+        if (Test-Path $path) {
+            New-ItemProperty -Path $path -Name "SystemDefaultTlsVersions" -Value 1 -PropertyType DWORD -Force -ErrorAction SilentlyContinue | Out-Null
+            New-ItemProperty -Path $path -Name "SchUseStrongCrypto" -Value 1 -PropertyType DWORD -Force -ErrorAction SilentlyContinue | Out-Null
+        }
+    }
+  changed_when: false
+  check_mode: false
+  failed_when: false
+
 - name: set windows_ps_ignore_cert to false
   ansible.builtin.set_fact:
     windows_ps_ignore_cert: false

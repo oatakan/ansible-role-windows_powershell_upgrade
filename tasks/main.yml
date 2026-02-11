@@ -39,16 +39,14 @@
           ansible.builtin.include_tasks: post_upgrade.yml
       when: (ansible_powershell_version|int) is version(powershell_target_version|int, '<')
 
-    - name: enable tls and winrm memory fix
-      block:
-        - name: enable tls as system default
-          ansible.builtin.include_tasks: enable_tls_system_default.yml
-          when:
-            - os_version is version('6.2', '<')
-            - enable_tls_system_default
+    - name: enable tls as system default
+      ansible.builtin.include_tasks: enable_tls_system_default.yml
+      when:
+        - os_version is version('6.2', '<')
+        - enable_tls_system_default
 
-        - name: apply winrm memory hotfix for powershell 3.0
-          ansible.builtin.include_tasks: winrm_memfix.yml
+    - name: apply winrm memory hotfix for powershell 3.0
+      ansible.builtin.include_tasks: winrm_memfix.yml
       when: ansible_powershell_version|int is version(3, '==')
   rescue:
     - name: fail if needed

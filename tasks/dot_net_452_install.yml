@@ -22,3 +22,14 @@
   changed_when: false
   check_mode: false
   failed_when: false
+
+- name: re-enable root certificate auto update
+  ansible.builtin.raw: |
+    $authRootPath = "HKLM:\SOFTWARE\Policies\Microsoft\SystemCertificates\AuthRoot"
+    if (Test-Path $authRootPath) {
+        Remove-ItemProperty -Path $authRootPath -Name "DisableRootAutoUpdate" -Force -ErrorAction SilentlyContinue
+    }
+  changed_when: false
+  check_mode: false
+  failed_when: false
+  when: windows_ps_ignore_cert
