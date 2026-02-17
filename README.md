@@ -30,6 +30,26 @@ Including an example of how to use your role (for instance, with variables passe
       roles:
          - oatakan.windows_powershell_upgrade
 
+KB2842230 URL sourcing notes
+----------------------------
+
+The old `s3.amazonaws.com/ansible-ci-files/...` links for `KB2842230` now return access denied.
+
+Use Microsoft Update Catalog direct URLs from the Download dialog payload instead:
+
+1. Open `https://www.catalog.update.microsoft.com/Search.aspx?q=2842230`.
+1. Capture each `updateid` from the `goToDetails("...")` entries in page source.
+1. POST to `https://www.catalog.update.microsoft.com/DownloadDialog.aspx` with:
+
+  updateIDs=[{"size":0,"languages":"","uidInfo":"UPDATE_ID","updateID":"UPDATE_ID"}]
+
+1. Read `downloadInformation[0].files[0].url` from the response HTML.
+
+Current catalog state (2026-02):
+
+- Windows 8 / Server 2012 (`os_6_2`): direct `.msu` URLs are available and used by default.
+- Windows 7 / 2008 R2 (`os_6_1`) and Windows 2008 (`os_6_0`): no public catalog entries are currently listed for `KB2842230`; use an internal mirror if still required.
+
 License
 -------
 

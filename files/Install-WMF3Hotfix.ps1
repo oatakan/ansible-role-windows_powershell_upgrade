@@ -108,33 +108,43 @@ if (-not (Test-Path -Path $tmp_dir)) {
 $os_version = [Version](Get-Item -Path "$env:SystemRoot\System32\kernel32.dll").VersionInfo.ProductVersion
 $host_string = "$($os_version.Major).$($os_version.Minor)-$($env:PROCESSOR_ARCHITECTURE)"
 switch($host_string) {
-    # These URLS point to the Ansible Core CI S3 bucket, MS no longer provide a link to Server 2008 so we need to
-    # rely on this URL. There are no guarantees this will stay up in the future.
     "6.0-x86" {
-        $url = "https://s3.amazonaws.com/ansible-ci-files/hotfixes/KB2842230/464091_intl_i386_zip.exe"
+        $url = $null
     }
     "6.0-AMD64" {
-        $url = "https://s3.amazonaws.com/ansible-ci-files/hotfixes/KB2842230/464090_intl_x64_zip.exe"
+        $url = $null
     }
     "6.1-x86" {
-        $url = "https://s3.amazonaws.com/ansible-ci-files/hotfixes/KB2842230/463983_intl_i386_zip.exe"
+        $url = $null
     }
     "6.1-AMD64" {
-        $url = "https://s3.amazonaws.com/ansible-ci-files/hotfixes/KB2842230/463984_intl_x64_zip.exe"
+        $url = $null
     }
     "6.2-x86" {
-        $url = "https://s3.amazonaws.com/ansible-ci-files/hotfixes/KB2842230/463940_intl_i386_zip.exe"
+        $url = "https://catalog.s.download.windowsupdate.com/d/msdownload/update/software/htfx/2013/07/windows8-rt-kb2842230-x86_ba30b9f56e801eb6dc4915312514340c613780fc.msu"
     }
     "6.2-AMD64" {
-        $url = "https://s3.amazonaws.com/ansible-ci-files/hotfixes/KB2842230/463941_intl_x64_zip.exe"
+        $url = "https://catalog.s.download.windowsupdate.com/d/msdownload/update/software/htfx/2013/07/windows8-rt-kb2842230-x64_6b06f4059b82eaa8140e91e9f30c7b3a72640741.msu"
     }
 }
 
-$filename = $url.Split("/")[-1]
-$compressed_file = "$tmp_dir\$($filename).zip"
-Download-File -url $url -path $compressed_file
-Extract-Zip -zip $compressed_file -dest $tmp_dir
-$file = Get-Item -Path "$tmp_dir\*$kb*.msu"
+if ([String]::IsNullOrWhiteSpace($url)) {
+    Write-Error -Message "No public Microsoft download URL was found for $host_string and $kb. Provide an internal mirror URL and install manually."
+    exit 1
+}
+
+if ($url -match "\.msu($|\?)") {
+    $filename = $url.Split("/")[-1]
+    $file_path = "$tmp_dir\$filename"
+    Download-File -url $url -path $file_path
+    $file = Get-Item -Path $file_path
+} else {
+    $filename = $url.Split("/")[-1]
+    $compressed_file = "$tmp_dir\$($filename).zip"
+    Download-File -url $url -path $compressed_file
+    Extract-Zip -zip $compressed_file -dest $tmp_dir
+    $file = Get-Item -Path "$tmp_dir\*$kb*.msu"
+}
 if ($file -eq $null) {
     Write-Error -Message "unable to find extracted msu file for hotfix KB"
     exit 1

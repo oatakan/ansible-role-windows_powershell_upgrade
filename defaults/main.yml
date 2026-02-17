@@ -12,15 +12,19 @@ ps_memfix_hotfixes:
   os_6_0:
     kb: kb2842230
     file: Windows6.0-KB2842230-x64.msu
-    url: https://s3.amazonaws.com/ansible-ci-files/hotfixes/KB2842230/464090_intl_x64_zip.exe
+    # No Microsoft Update Catalog package is currently listed for Windows 6.0.
+    # Override this with an internally mirrored package URL if you still support 6.0.
+    url: ""
   os_6_1:
     kb: kb2842230
     file: Windows6.1-KB2842230-x64.msu
-    url: https://s3.amazonaws.com/ansible-ci-files/hotfixes/KB2842230/463984_intl_x64_zip.exe
+    # No Microsoft Update Catalog package is currently listed for Windows 6.1.
+    # Override this with an internally mirrored package URL if you still support 6.1.
+    url: ""
   os_6_2:
     kb: kb2842230
     file: Windows8-RT-KB2842230-x64.msu
-    url: https://s3.amazonaws.com/ansible-ci-files/hotfixes/KB2842230/463941_intl_x64_zip.exe
+    url: https://catalog.s.download.windowsupdate.com/d/msdownload/update/software/htfx/2013/07/windows8-rt-kb2842230-x64_6b06f4059b82eaa8140e91e9f30c7b3a72640741.msu
 
 windows_hotfix_role: oatakan.windows_hotfix
 
