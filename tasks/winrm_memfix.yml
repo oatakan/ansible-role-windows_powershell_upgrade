@@ -4,6 +4,17 @@
 
 - name: apply powershell memory fix
   block:
+    - name: determine if memfix hotfix URL is available
+      ansible.builtin.set_fact:
+        ps_memfix_hotfix_url_available: "{{ (ps_memfix_hotfix.url | default('') | trim | length) > 0 }}"
+
+    - name: skip winrm memory hotfix when no URL is available
+      ansible.builtin.debug:
+        msg: >-
+          skipping KB2842230 memory hotfix because no download URL is configured for {{ os_version_name }};
+          set ps_memfix_hotfixes.{{ os_version_name }}.url to an internal mirror URL to enable installation
+      when: not ps_memfix_hotfix_url_available
+
     - name: powershell memory fix
       ansible.builtin.include_role:
         name: "{{ windows_hotfix_role }}"
@@ -11,6 +22,8 @@
         hotfix: "{{ ps_memfix_hotfix }}"
         hotfix_install_wait_seconds: 400
         use_raw_module: true
+      when: ps_memfix_hotfix_url_available
   rescue:
     - name: apply winrm memory hotfix for powershell 3.0 (alt)
       ansible.builtin.include_tasks: winrm_memfix_alt.yml
+      when: ps_memfix_hotfix_url_available

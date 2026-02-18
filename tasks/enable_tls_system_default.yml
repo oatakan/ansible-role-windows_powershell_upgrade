@@ -77,12 +77,14 @@
   changed_when: false
   check_mode: false
   failed_when: false
+  when: enable_tls_winrm_restart
 
 - name: wait for winrm to come back after restart
   ansible.builtin.wait_for_connection:
-    delay: 15
-    sleep: 5
-    timeout: 120
+    delay: "{{ enable_tls_winrm_wait_delay }}"
+    sleep: "{{ enable_tls_winrm_wait_sleep }}"
+    timeout: "{{ enable_tls_winrm_wait_timeout }}"
+  when: enable_tls_winrm_restart
 
 - name: set windows_ps_ignore_cert to false
   ansible.builtin.set_fact:

@@ -1,0 +1,117 @@
+#Requires -Version 3.0
+[CmdletBinding()]
+Param()
+
+$ErrorActionPreference = "Stop"
+if ($verbose) {
+    $VerbosePreference = "Continue"
+}
+
+Function Run-Process($executable, $arguments) {
+    $process = New-Object -TypeName System.Diagnostics.Process
+    $psi = $process.StartInfo
+    $psi.FileName = $executable
+    $psi.Arguments = $arguments
+    Write-Verbose -Message "starting new process '$executable $arguments'"
+    $process.Start() | Out-Null
+
+    $process.WaitForExit() | Out-Null
+    $exit_code = $process.ExitCode
+    Write-Verbose -Message "process completed with exit code '$exit_code'"
+
+    return $exit_code
+}
+
+Function Download-File($url, $path) {
+    Write-Verbose -Message "downloading url '$url' to '$path'"
+    $client = New-Object -TypeName System.Net.WebClient
+    $client.DownloadFile($url, $path)
+}
+
+Function Extract-Zip($zip, $dest) {
+    Write-Verbose -Message "extracting '$zip' to '$dest'"
+    try {
+        Add-Type -AssemblyName System.IO.Compression.FileSystem > $null
+        $legacy = $false
+    } catch {
+        $legacy = $true
+    }
+
+    if ($legacy) {
+        $shell = New-Object -ComObject Shell.Application
+        $zip_src = $shell.NameSpace($zip)
+        $zip_dest = $shell.NameSpace($dest)
+        $zip_dest.CopyHere($zip_src.Items(), 1044)
+    } else {
+        [System.IO.Compression.ZipFile]::ExtractToDirectory($zip, $dest)
+    }
+}
+
+$tmp_dir = $env:temp
+$kb = "KB2842230"
+if ($PSVersionTable.PSVersion.Major -ne 3) {
+    Write-Verbose -Message "$kb is only applicable with Powershell v3, no action required"
+    exit 0
+}
+
+$hotfix_installed = Get-Hotfix -Id $kb -ErrorAction SilentlyContinue
+if ($hotfix_installed -ne $null) {
+    Write-Verbose -Message "$kb is already installed"
+    exit 0
+}
+
+if (-not (Test-Path -Path $tmp_dir)) {
+    New-Item -Path $tmp_dir -ItemType Directory > $null
+}
+
+$os_version = [Version](Get-Item -Path "$env:SystemRoot\System32\kernel32.dll").VersionInfo.ProductVersion
+$host_string = "$($os_version.Major).$($os_version.Minor)-$($env:PROCESSOR_ARCHITECTURE)"
+
+$url_map = @{
+    "6.0-x86" = "{{ ps_memfix_hotfix_url_6_0_x86 | default('') }}"
+    "6.0-AMD64" = "{{ ps_memfix_hotfix_url_6_0_amd64 | default('') }}"
+    "6.1-x86" = "{{ ps_memfix_hotfix_url_6_1_x86 | default('') }}"
+    "6.1-AMD64" = "{{ ps_memfix_hotfix_url_6_1_amd64 | default('') }}"
+    "6.2-x86" = "{{ ps_memfix_hotfix_url_6_2_x86 | default('') }}"
+    "6.2-AMD64" = "{{ ps_memfix_hotfix_url_6_2_amd64 | default('') }}"
+}
+
+$url = $null
+if ($url_map.ContainsKey($host_string)) {
+    $url = $url_map[$host_string]
+}
+
+if ([String]::IsNullOrWhiteSpace($url)) {
+    Write-Error -Message "No configured download URL for $host_string and $kb. Set ps_memfix_alt_hotfix_urls['$host_string'] in role vars."
+    exit 1
+}
+
+if ($url -match "\.msu($|\?)") {
+    $filename = $url.Split("/")[-1]
+    $file_path = "$tmp_dir\$filename"
+    Download-File -url $url -path $file_path
+    $file = Get-Item -Path $file_path
+} else {
+    $filename = $url.Split("/")[-1]
+    $compressed_file = "$tmp_dir\$($filename).zip"
+    Download-File -url $url -path $compressed_file
+    Extract-Zip -zip $compressed_file -dest $tmp_dir
+    $file = Get-Item -Path "$tmp_dir\*$kb*.msu"
+}
+
+if ($file -eq $null) {
+    Write-Error -Message "unable to find extracted msu file for hotfix KB"
+    exit 1
+}
+
+$exit_code = Run-Process -executable $file.FullName -arguments "/quiet /norestart"
+if ($exit_code -eq 3010) {
+    Write-Verbose "need to restart computer after hotfix $kb install"
+    Restart-Computer -Force
+} elseif ($exit_code -ne 0) {
+    Write-Error -Message "failed to install hotfix $($kb): exit code $exit_code"
+} else {
+    Write-Verbose -Message "hotfix $kb install complete"
+}
+
+exit $exit_code

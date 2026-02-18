@@ -2,13 +2,10 @@
 
 # see https://docs.ansible.com/ansible/latest/user_guide/windows_setup.html#winrm-memory-hotfix
 
-- name: download script
-  ansible.builtin.raw: >
-    [Net.ServicePointManager]::SecurityProtocol = [Enum]::ToObject([Net.SecurityProtocolType], 3072);
-    (New-Object -TypeName System.Net.WebClient).DownloadFile("{{ ps_memfix_script_url }}", "{{ ps_memfix_script_file }}")
-  changed_when: false
-  check_mode: false
-  register: download_script
+- name: deploy memfix script from template
+  ansible.windows.win_template:
+    src: Install-WMF3Hotfix.ps1.j2
+    dest: "{{ ps_memfix_script_file }}"
 
 - name: set execution policy
   ansible.builtin.raw: 'Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force'

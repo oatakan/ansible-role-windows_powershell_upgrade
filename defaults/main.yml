@@ -5,8 +5,16 @@ temp_directory: "{{ ansible_env.TEMP }}"
 
 ps_memfix_script_url: https://raw.githubusercontent.com/oatakan/ansible-role-windows_powershell_upgrade/master/files/Install-WMF3Hotfix.ps1
 ps_memfix_script_file: 'C:\Install-WMF3Hotfix.ps1'
-ps_memfix_wait_for_connection_delay: 300
-ps_memfix_wait_for_connection_timeout: 300
+ps_memfix_wait_for_connection_delay: 30
+ps_memfix_wait_for_connection_timeout: 900
+
+# Flat URL vars for easy upstream overrides
+ps_memfix_hotfix_url_6_0_x86: ""
+ps_memfix_hotfix_url_6_0_amd64: ""
+ps_memfix_hotfix_url_6_1_x86: ""
+ps_memfix_hotfix_url_6_1_amd64: ""
+ps_memfix_hotfix_url_6_2_x86: "https://catalog.s.download.windowsupdate.com/d/msdownload/update/software/htfx/2013/07/windows8-rt-kb2842230-x86_ba30b9f56e801eb6dc4915312514340c613780fc.msu"
+ps_memfix_hotfix_url_6_2_amd64: "https://catalog.s.download.windowsupdate.com/d/msdownload/update/software/htfx/2013/07/windows8-rt-kb2842230-x64_6b06f4059b82eaa8140e91e9f30c7b3a72640741.msu"
 
 ps_memfix_hotfixes:
   os_6_0:
@@ -14,17 +22,17 @@ ps_memfix_hotfixes:
     file: Windows6.0-KB2842230-x64.msu
     # No Microsoft Update Catalog package is currently listed for Windows 6.0.
     # Override this with an internally mirrored package URL if you still support 6.0.
-    url: ""
+    url: "{{ ps_memfix_hotfix_url_6_0_amd64 }}"
   os_6_1:
     kb: kb2842230
     file: Windows6.1-KB2842230-x64.msu
     # No Microsoft Update Catalog package is currently listed for Windows 6.1.
     # Override this with an internally mirrored package URL if you still support 6.1.
-    url: ""
+    url: "{{ ps_memfix_hotfix_url_6_1_amd64 }}"
   os_6_2:
     kb: kb2842230
     file: Windows8-RT-KB2842230-x64.msu
-    url: https://catalog.s.download.windowsupdate.com/d/msdownload/update/software/htfx/2013/07/windows8-rt-kb2842230-x64_6b06f4059b82eaa8140e91e9f30c7b3a72640741.msu
+    url: "{{ ps_memfix_hotfix_url_6_2_amd64 }}"
 
 windows_hotfix_role: oatakan.windows_hotfix
 
@@ -68,6 +76,10 @@ dot_net_452:
   url: http://download.microsoft.com/download/E/2/1/E21644B5-2DF2-47C2-91BD-63C560427900/NDP452-KB2901907-x86-x64-AllOS-ENU.exe
 
 enable_tls_system_default: true  # this is needed to download https links on 2008 R2 and Windows 7 SP1
+enable_tls_winrm_restart: false
+enable_tls_winrm_wait_delay: 20
+enable_tls_winrm_wait_sleep: 10
+enable_tls_winrm_wait_timeout: 300
 enable_tls_support_hotfix_download_location: 'C:\Windows\Temp'
 # no longer available
 # enable_tls_support_hotfix:
