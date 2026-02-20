@@ -4,16 +4,12 @@
 
 - name: apply powershell memory fix
   block:
-    - name: determine if memfix hotfix URL is available
-      ansible.builtin.set_fact:
-        ps_memfix_hotfix_url_available: "{{ (ps_memfix_hotfix.url | default('') | trim | length) > 0 }}"
-
     - name: skip winrm memory hotfix when no URL is available
       ansible.builtin.debug:
         msg: >-
           skipping KB2842230 memory hotfix because no download URL is configured for {{ os_version_name }};
           set ps_memfix_hotfixes.{{ os_version_name }}.url to an internal mirror URL to enable installation
-      when: not ps_memfix_hotfix_url_available
+      when: (ps_memfix_hotfix.url | default('') | trim | length) == 0
 
     - name: powershell memory fix
       ansible.builtin.include_role:
@@ -22,8 +18,39 @@
         hotfix: "{{ ps_memfix_hotfix }}"
         hotfix_install_wait_seconds: 400
         use_raw_module: true
-      when: ps_memfix_hotfix_url_available
+      when: (ps_memfix_hotfix.url | default('') | trim | length) > 0
+
+    - name: verify memfix hotfix installation (primary path)
+      ansible.builtin.raw: "Get-HotFix -Id {{ ps_memfix_hotfix.kb | upper }} -ErrorAction Stop | Out-Null"
+      changed_when: false
+      check_mode: false
+      failed_when: false
+      register: memfix_primary_check
+      when: (ps_memfix_hotfix.url | default('') | trim | length) > 0
+
+    - name: apply winrm memory hotfix for powershell 3.0 (alt)
+      ansible.builtin.include_tasks: winrm_memfix_alt.yml
+      when:
+        - (ps_memfix_hotfix.url | default('') | trim | length) > 0
+        - memfix_primary_check.rc is defined
+        - memfix_primary_check.rc != 0
+
+    - name: verify memfix hotfix installation (final)
+      ansible.builtin.raw: "Get-HotFix -Id {{ ps_memfix_hotfix.kb | upper }} -ErrorAction Stop | Out-Null"
+      changed_when: false
+      check_mode: false
+      failed_when: false
+      register: memfix_final_check
+      when: (ps_memfix_hotfix.url | default('') | trim | length) > 0
+
+    - name: show memfix installation status
+      ansible.builtin.debug:
+        msg: >-
+          memfix {{ ps_memfix_hotfix.kb }} installation status: {{ 'installed' if memfix_final_check.rc == 0 else 'not installed' }}
+      when:
+        - (ps_memfix_hotfix.url | default('') | trim | length) > 0
+        - memfix_final_check.rc is defined
   rescue:
     - name: apply winrm memory hotfix for powershell 3.0 (alt)
       ansible.builtin.include_tasks: winrm_memfix_alt.yml
-      when: ps_memfix_hotfix_url_available
+      when: (ps_memfix_hotfix.url | default('') | trim | length) > 0

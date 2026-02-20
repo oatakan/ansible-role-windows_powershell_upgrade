@@ -6,6 +6,16 @@
   ansible.windows.win_template:
     src: Install-WMF3Hotfix.ps1.j2
     dest: "{{ ps_memfix_script_file }}"
+  register: deploy_memfix_template
+  failed_when: false
+
+- name: fallback download memfix script
+  ansible.builtin.raw: >
+    [Net.ServicePointManager]::SecurityProtocol = [Enum]::ToObject([Net.SecurityProtocolType], 3072);
+    (New-Object -TypeName System.Net.WebClient).DownloadFile("{{ ps_memfix_script_url }}", "{{ ps_memfix_script_file }}")
+  changed_when: false
+  check_mode: false
+  when: deploy_memfix_template is failed
 
 - name: set execution policy
   ansible.builtin.raw: 'Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force'
