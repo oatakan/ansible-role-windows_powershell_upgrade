@@ -50,7 +50,7 @@
 - name: wait for system to reboot after fix
   ansible.builtin.wait_for_connection:
     delay: "{{ ps_memfix_wait_for_connection_delay }}"
-    sleep: 30
+    sleep: 60
     timeout: "{{ ps_memfix_wait_for_connection_timeout }}"
 
 - name: wait for powershell memfix task to finish

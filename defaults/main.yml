@@ -5,8 +5,8 @@ temp_directory: "{{ ansible_env.TEMP }}"
 
 ps_memfix_script_url: https://raw.githubusercontent.com/oatakan/ansible-role-windows_powershell_upgrade/master/files/Install-WMF3Hotfix.ps1
 ps_memfix_script_file: 'C:\Install-WMF3Hotfix.ps1'
-ps_memfix_wait_for_connection_delay: 30
-ps_memfix_wait_for_connection_timeout: 900
+ps_memfix_wait_for_connection_delay: 180
+ps_memfix_wait_for_connection_timeout: 1200
 
 # Flat URL vars for easy upstream overrides
 ps_memfix_hotfix_url_6_0_x86: ""
